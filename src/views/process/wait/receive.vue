@@ -1,16 +1,42 @@
 <template>
   <div id='receive'>
     <ul class='tit'>
-      <li><router-link to="/wait/receive/contract" active-class='active'>采购订单/合同</router-link></li>
-      <li><router-link to="/wait/receive/contractdetail" active-class='active'>采购订单/合同明细</router-link></li>
+      <li><a :class="{'active': isActive}" @click="changeTab">采购订单/合同</a></li>
+      <li><a :class="{'active': !isActive}" @click="changeTab">采购订单/合同明细</a></li>
     </ul>
-    <router-view></router-view>
+    <component :is="currentTabComponent"></component>
   </div>
 </template>
 
 <script>
+import Contract from '@/views/process/wait/receive/contract'
+import Contractdetail from '@/views/process/wait/receive/contractdetail'
 export default {
-
+  data () {
+    return {
+      isActive: true,
+      currentTabComponent: Contract
+    }
+  },
+  components: {
+    Contract, Contractdetail
+  },
+  methods: {
+    changeTab (e) {
+      switch (e.toElement.textContent) {
+        case '采购订单/合同':
+          this.currentTabComponent = Contract
+          this.isActive = true
+          break
+        case '采购订单/合同明细':
+          this.currentTabComponent = Contractdetail
+          this.isActive = false
+          break
+        default :
+          break
+      }
+    }
+  }
 }
 </script>
 

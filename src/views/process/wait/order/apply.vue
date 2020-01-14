@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+// import axios from 'axios'
 export default {
   data () {
     return {
@@ -191,6 +191,7 @@ export default {
       data1: []
     }
   },
+  props: ['newData'],
   methods: {
     getDate1 (e) {
       this.value1 = e
@@ -256,24 +257,19 @@ export default {
   },
   mounted () {
     this.loading = true
-    axios.get('/swipes')
-      .then(
-        res => {
-          this.alldata = res.data[0].array
-          this.total = this.alldata.length
-          this.pagenumber = Math.ceil(this.alldata.length / 10)
-          this.alldata.sort(function (a, b) {
-            return a.sqdate > b.sqdate ? 1 : -1
-          })
-          if (this.alldata.length > 10) {
-            this.data1.splice(0, this.data1.length)
-            for (let i = 0; i < 10; i++) {
-              this.data1.push(this.alldata[i])
-            }
-          } else { this.data1 = this.alldata.array }
-          this.loading = false
-        }
-      )
+    this.alldata = this.newData
+    this.total = this.alldata.length
+    this.pagenumber = Math.ceil(this.alldata.length / 10)
+    this.alldata.sort(function (a, b) {
+      return a.sqdate > b.sqdate ? 1 : -1
+    })
+    if (this.alldata.length > 10) {
+      this.data1.splice(0, this.data1.length)
+      for (let i = 0; i < 10; i++) {
+        this.data1.push(this.alldata[i])
+      }
+    } else { this.data1 = this.alldata.array }
+    this.loading = false
   }
 }
 </script>

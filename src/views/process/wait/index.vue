@@ -5,49 +5,84 @@
         </ul>
         <ul class="top2">
           <li class="firs">
-            <router-link to='/wait/order' active-class='active'>
-              <em class="amount">22</em>
+            <a :class="{'active' : index === 1}" @click="changeTabs" >
+              <em class="amount">{{newData.length}}</em>
               <i class="icon xd pos"></i>
               <p>待采购下单</p>
-            </router-link>
+            </a>
           </li>
           <li>
-            <router-link to='/wait/receive' active-class='active'>
+            <a :class="{'active' : index === 2}" @click="changeTabs">
               <em class="amount">0</em>
-              <i class="icon"></i>
               <i class="icon sh pos"></i>
               <p>待收货</p>
-            </router-link>
+            </a>
           </li>
           <li>
-            <router-link to='/wait/check' active-class='active'>
+            <a :class="{'active' : index === 3}" @click="changeTabs">
               <em class="amount">0</em>
-              <i class="icon"></i>
               <i class="icon ys pos"></i>
               <p>到货待验收</p>
-            </router-link>
+            </a>
           </li>
           <li class="last">
-            <router-link to='/wait/receipt' active-class='active'>
+            <a :class="{'active' : index === 4}" @click="changeTabs">
               <em class="amount">0</em>
-              <i class="icon"></i>
               <i class="icon fp pos"></i>
               <p>待开发票</p>
-            </router-link>
+            </a>
           </li>
         </ul>
-        <router-view></router-view>
+      <component :is="changeTab[index-1]" :newData='newData' v-if="flag"></component>
     </div>
 </template>
 
 <script>
+import axios from 'axios'
+import Check from '@/views/process/wait/check'
+import Receive from '@/views/process/wait/receive'
+import Receipt from '@/views/process/wait/receipt'
+import Order from '@/views/process/wait/order'
 export default {
   data () {
     return {
-
+      flag: false,
+      changeTab: [Order, Receive, Check, Receipt],
+      index: 1,
+      newData: []
+    }
+  },
+  methods: {
+    changeTabs (e) {
+      switch (e.target.children[2].innerText) {
+        case '待采购下单':
+          this.index = 1
+          break
+        case '待收货':
+          this.index = 2
+          break
+        case '到货待验收':
+          this.index = 3
+          break
+        case '待开发票':
+          this.index = 4
+          break
+        default :
+          break
+      }
     }
   },
   components: {
+    Check, Receive, Receipt, Order
+  },
+  mounted () {
+    axios.get('/swipes')
+      .then(
+        res => {
+          this.newData = res.data[0].array
+          this.flag = true
+        }
+      )
   }
 }
 </script>
@@ -129,6 +164,10 @@ export default {
             background-color: #f9f0f0;
             height: 70px;
             text-align: center;
+            em,i,p{
+              // 阻止该元素的点击事件
+              pointer-events: none;
+            }
           }
           .active{
             background-color: #dc5252;
@@ -138,9 +177,11 @@ export default {
               background-color: #fff;
             }
             i{
+              pointer-events: none;
               background-position-y:-48px;
             }
             p{
+              pointer-events: none;
               color: #fff;
               font-weight: 700;
             }
