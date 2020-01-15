@@ -42,8 +42,8 @@
       <i class="icon zc i_color"></i><span>正常</span>
     </p>
     <Table border ref="selection" :columns="columns1" :data="data1" :disabled-hover='isHover'></Table>
-    <p class="finally"><span>总共{{data1.length}}条记录，共{{pagenumber}}页</span>
-      <Page :total="data1.length" show-elevator prev-text="上一页" next-text="下一页" />
+    <p class="finally"><span>总共{{total}}条记录，共{{pagenumber}}页</span>
+      <Page :total="total" show-elevator @on-change='page_change' />
     </p>
     <ul class="final">
       <li><Button type="error">生成采购合同</Button></li>
@@ -57,7 +57,21 @@
 export default {
   data () {
     return {
+      checkAll: false,
+      // 最早时间
+      value1: '',
+      // 最晚时间
+      value2: '',
+      // 数据条数
+      total: 0,
+      // 页码数
       pagenumber: 1,
+      // 表格的加载状态
+      loading: false,
+      // 储存表格的所有数据
+      alldata: [],
+      // 满足条件的所有数据
+      truedata: [],
       isHover: false,
       s1: '',
       input_value: ' ',
@@ -121,7 +135,7 @@ export default {
         align: 'center'
       }, {
         title: '状态',
-        key: 'name',
+        key: 'state',
         width: 65,
         tooltip: true,
         align: 'center',
@@ -129,8 +143,8 @@ export default {
           // console.log(params.row.name)
           return h('i', {
             'class': {
-              'icon cs i_color': params.row.name,
-              'icon zc i_color': !params.row.name
+              'icon cs i_color': params.row.state,
+              'icon zc i_color': !params.row.state
             }
           })
         }
@@ -140,70 +154,137 @@ export default {
         align: 'center',
         // width: 180,
         tooltip: true,
-        key: 'age'
+        key: 'sqnumber'
       }, {
         title: '申请人',
-        key: 'address',
+        key: 'sqman',
         tooltip: true,
         // width: 140,
         align: 'center'
       }, {
         title: '审批通过日期',
-        key: 'address',
+        key: 'passdate',
         // width: 110,
         tooltip: true,
         align: 'center'
       }, {
         title: '已询价',
-        // type: 'selection',
-        key: 'address',
+        key: 'asked',
         tooltip: true,
-        // width: 120,
-        align: 'center'
+        align: 'center',
+        render: (h, params) => {
+          return h('Checkbox', {
+            props: { value: params.row.asked, name: 'asked' },
+            on: {
+              'on-change': (e) => {
+                this.data1.forEach(it => {
+                  if (it.sqnumber === params.row.sqnumber) {
+                    it.asked = e
+                  }
+                })
+                this.checkAlls()
+              }
+            }
+          }
+          )
+        },
+        renderHeader: (h, params) => {
+          return h('div', [
+            h('span', '已询价'
+            ),
+            h('Checkbox', {
+              props: {
+                value: this.checkAll,
+                name: 'asked'
+              },
+              on: {
+                'on-change': (e) => {
+                  this.data1.forEach(it => {
+                    it.asked = e
+                  })
+                  this.checkAll = e
+                }
+              }
+            })]
+          )
+        }
       }, {
         title: '公司',
-        key: 'address',
+        key: 'gc',
         tooltip: true,
         // width: 200,
         align: 'center'
       }, {
         title: '公司到货地址',
-        key: 'address',
+        key: 'gcdhdz',
         tooltip: true,
         // width: 200,
         align: 'center'
       }, {
         title: '备注',
-        key: 'address',
+        key: 'bz',
         tooltip: true,
         align: 'center'
       }, {
         title: '项目',
-        key: 'address',
+        key: 'xm',
         tooltip: true,
         align: 'center'
       }, {
         title: '是否预付',
-        key: 'address',
+        key: 'pay',
         tooltip: true,
         align: 'center'
       }
       ],
-      data1: [
-        {
-          name: false,
-          age: 18,
-          address: '成玉军(75172)',
-          date: '2016-10-03'
-        },
-        {
-          name: true,
-          age: 24,
-          address: 'London No. 1 Lake Park',
-          date: '2016-10-01'
-        }
-      ]
+      data1: []
     }
+  },
+  computed: {
+    // checkAll () {
+    //   let checks = true
+    //   this.data1.forEach(e => {
+    //     checks = e.asked && checks
+    //   })
+    //   return checks
+    // }
+  },
+  methods: {
+    checkAlls () {
+      let checks = true
+      this.data1.forEach(e => {
+        checks = e.asked && checks
+      })
+      this.checkAll = checks
+    },
+    page_change (num) {
+      this.data1.splice(0, this.data1.length)
+      // 优先启用满足当前条件的数据
+      let pagedata = this.alldata
+      for (let i = (num - 1) * 10; i <
+       (num * 10 > pagedata.length ? pagedata.length : num * 10); i++) {
+        this.data1.push(pagedata[i])
+      }
+    }
+  },
+  props: [
+    'newData'
+  ],
+  mounted () {
+    this.loading = true
+    this.alldata = this.newData
+    this.total = this.alldata.length
+    this.pagenumber = Math.ceil(this.alldata.length / 10)
+    this.alldata.sort(function (a, b) {
+      return a.sqdate > b.sqdate ? 1 : -1
+    })
+    if (this.alldata.length > 10) {
+      this.data1.splice(0, this.data1.length)
+      for (let i = 0; i < 10; i++) {
+        this.data1.push(this.alldata[i])
+      }
+    } else { this.data1 = this.alldata.array }
+    this.loading = false
   }
 }
 </script>

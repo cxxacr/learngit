@@ -39,7 +39,7 @@
   </p>
   <Table border ref="selection" :loading="loading" :columns="columns1" :data="data1" :disabled-hover='isHover'></Table>
   <p class="finally"><span>总共{{total}}条记录，共{{pagenumber}}页</span>
-  <Page ref="pages" :total="total" show-elevator @on-change='page_change' prev-text="上一页" next-text="下一页" />
+  <Page ref="pages" :total="total" show-elevator @on-change='page_change'/>
   </p>
   <ul class="final">
     <li><Button type="error">生成采购合同</Button></li>
@@ -131,7 +131,7 @@ export default {
         align: 'center'
       }, {
         title: '状态',
-        key: 'boolean',
+        key: 'state',
         width: 65,
         tooltip: true,
         align: 'center',
@@ -139,8 +139,8 @@ export default {
           // console.log(params)
           return h('i', {
             'class': {
-              'icon cs i_color': params.row.boolean,
-              'icon zc i_color': !params.row.boolean
+              'icon cs i_color': params.row.state,
+              'icon zc i_color': !params.row.state
             }
           })
         }
@@ -177,7 +177,7 @@ export default {
         align: 'center'
       }, {
         title: '公司',
-        key: 'gs',
+        key: 'gc',
         tooltip: true,
         width: 200,
         align: 'center'
