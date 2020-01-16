@@ -41,7 +41,12 @@
       <i class="icon cs i_color"></i><span>超时</span>
       <i class="icon zc i_color"></i><span>正常</span>
     </p>
-    <Table border ref="selection" :columns="columns1" :data="data1" :disabled-hover='isHover'></Table>
+    <Table border ref="table" :columns="columns1" :data="data1"
+      @on-select="tableSelect"
+      @on-select-cancel="tableSelectCancel"
+      @on-select-all="tableSelectAll"
+      @on-select-all-cancel="tableSelectAllCancel"
+      :disabled-hover='isHover'></Table>
     <p class="finally"><span>总共{{total}}条记录，共{{pagenumber}}页</span>
       <Page :total="total" show-elevator @on-change='page_change' />
     </p>
@@ -57,6 +62,7 @@
 export default {
   data () {
     return {
+      // check: true,
       checkAll: false,
       // 最早时间
       value1: '',
@@ -132,6 +138,7 @@ export default {
       columns1: [{
         type: 'selection',
         width: 50,
+        key: this.check,
         align: 'center'
       }, {
         title: '状态',
@@ -173,16 +180,11 @@ export default {
         tooltip: true,
         align: 'center',
         render: (h, params) => {
-          return h('Checkbox', {
+          return h('checkbox', {
             props: { value: params.row.asked, name: 'asked' },
             on: {
               'on-change': (e) => {
-                this.data1.forEach(it => {
-                  if (it.sqnumber === params.row.sqnumber) {
-                    it.asked = e
-                  }
-                })
-                this.checkAlls()
+                this.check(e, params)
               }
             }
           }
@@ -192,7 +194,7 @@ export default {
           return h('div', [
             h('span', '已询价'
             ),
-            h('Checkbox', {
+            h('checkbox', {
               props: {
                 value: this.checkAll,
                 name: 'asked'
@@ -241,21 +243,47 @@ export default {
     }
   },
   computed: {
-    // checkAll () {
-    //   let checks = true
-    //   this.data1.forEach(e => {
-    //     checks = e.asked && checks
-    //   })
-    //   return checks
-    // }
+  },
+  watch: {
   },
   methods: {
-    checkAlls () {
+    check (e, params) {
       let checks = true
-      this.data1.forEach(e => {
-        checks = e.asked && checks
+      this.data1.forEach(it => {
+        if (it.sqnumber === params.row.sqnumber) {
+          it.asked = e
+        }
+        checks = it.asked && checks
       })
       this.checkAll = checks
+    },
+    // 单行选择
+    tableSelect (selection, row) {
+      this.data1.map(s => {
+        if (s.sqnumber === row.sqnumber) {
+          s['_checked'] = true
+        }
+      })
+    },
+    // 单行取消选择
+    tableSelectCancel (selection, row) {
+      this.data1.map(s => {
+        if (s.sqnumber === row.sqnumber) {
+          s['_checked'] = false
+        }
+      })
+    },
+    // 全选
+    tableSelectAll (selection) {
+      this.data1.map(s => {
+        s['_checked'] = true
+      })
+    },
+    // 取消全选
+    tableSelectAllCancel (selection) {
+      this.data1.map(s => {
+        s['_checked'] = false
+      })
     },
     page_change (num) {
       this.data1.splice(0, this.data1.length)
@@ -285,6 +313,12 @@ export default {
       }
     } else { this.data1 = this.alldata.array }
     this.loading = false
+    // 已询价的全选
+    let checks = true
+    this.data1.forEach(it => {
+      checks = it.asked && checks
+    })
+    this.checkAll = checks
   }
 }
 </script>
