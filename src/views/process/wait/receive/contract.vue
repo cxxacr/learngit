@@ -42,9 +42,14 @@
         <i class="icon cs i_color"></i><span>超时</span>
         <i class="icon zc i_color"></i><span>正常</span>
     </p>
-    <Table border ref="selection" :columns="columns1" :data="data1" :disabled-hover='isHover'></Table>
-    <p class="finally"><span>总共{{data1.length}}条记录，共{{pagenumber}}页</span>
-        <Page :total="data1.length" show-elevator prev-text="上一页" next-text="下一页" />
+    <Table border ref="selection" :columns="columns1" :data="data1"
+      @on-select="tableSelect"
+      @on-select-cancel="tableSelectCancel"
+      @on-select-all="tableSelectAll"
+      @on-select-all-cancel="tableSelectAllCancel"
+      :disabled-hover='isHover'></Table>
+    <p class="finally"><span>总共{{total}}条记录，共{{pagenumber}}页</span>
+        <Page :total="total" show-elevator @on-change='page_change'/>
     </p>
     <ul class="final">
         <li><Button type="error">到货确认</Button></li>
@@ -56,6 +61,10 @@
 export default {
   data () {
     return {
+      checkAll: false,
+      loading: true,
+      alldata: [],
+      total: 0,
       // 控制状态 true红 false绿
       isLate: true,
       // 禁用鼠标悬停时的高亮
@@ -133,7 +142,7 @@ export default {
         align: 'center'
       }, {
         title: '状态',
-        key: 'name',
+        key: 'statue',
         width: 65,
         tooltip: true,
         align: 'center',
@@ -148,7 +157,7 @@ export default {
         }
       }, {
         title: '采购单据号',
-        key: 'address',
+        key: 'purchaseDocumentNumber',
         tooltip: true,
         // width: 140,
         align: 'center'
@@ -157,63 +166,156 @@ export default {
         align: 'center',
         // width: 180,
         tooltip: true,
-        key: 'age'
+        key: 'documentType'
       }, {
         title: '采购类型',
-        key: 'address',
+        key: 'purchaseType',
         // width: 110,
         tooltip: true,
         align: 'center'
       }, {
         title: '通知供应商',
-        key: 'address',
+        key: 'notifyTheSupplier',
         tooltip: true,
-        // width: 120,
-        align: 'center'
+        width: 120,
+        align: 'center',
+        render: (h, params) => {
+          return h('checkbox', {
+            props: { value: params.row.notifyTheSupplier },
+            on: {
+              'on-change': (e) => {
+                this.check(e, params)
+              }
+            }
+          }
+          )
+        },
+        renderHeader: (h, params) => {
+          return h('div', [
+            h('span', '通知供应商'
+            ),
+            h('checkbox', {
+              props: {
+                value: this.checkAll
+              },
+              on: {
+                'on-change': (e) => {
+                  this.data1.forEach(it => {
+                    it.notifyTheSupplier = e
+                  })
+                  this.checkAll = e
+                }
+              }
+            })]
+          )
+        }
       }, {
         title: '供应商',
-        key: 'address',
+        key: 'supplier',
         tooltip: true,
         // width: 200,
         align: 'center'
       }, {
         title: '到货地址',
-        key: 'address',
+        key: 'deliveryAddress',
         tooltip: true,
         // width: 200,
         align: 'center'
       }, {
         title: '单据日期',
-        key: 'address',
+        key: 'documentDate',
         tooltip: true,
         align: 'center'
       }, {
         title: '单据金额',
-        key: 'address',
+        key: 'documentAmount',
         tooltip: true,
         align: 'center'
       }, {
         title: '公司',
-        key: 'address',
+        key: 'company',
         tooltip: true,
         align: 'center'
       }
       ],
-      data1: [
-        {
-          name: false,
-          age: 18,
-          address: '成玉军(75172)',
-          date: '2016-10-03'
-        },
-        {
-          name: true,
-          age: 24,
-          address: 'London No. 1 Lake Park',
-          date: '2016-10-01'
-        }
-      ]
+      data1: []
     }
+  },
+  methods: {
+    check (e, params) {
+      let checks = true
+      this.data1.forEach(it => {
+        if (it.purchaseDocumentNumber === params.row.purchaseDocumentNumber) {
+          it.notifyTheSupplier = e
+        }
+        checks = it.notifyTheSupplier && checks
+      })
+      this.checkAll = checks
+    },
+    page_change (num) {
+      this.data1.splice(0, this.data1.length)
+      // 优先启用满足当前条件的数据
+      let pagedata = this.alldata
+      for (let i = (num - 1) * 10; i <
+        (num * 10 > pagedata.length ? pagedata.length : num * 10); i++) {
+        this.data1.push(pagedata[i])
+      }
+      this.change_asked()
+    },
+    // 单行选择
+    tableSelect (selection, row) {
+      this.data1.map(s => {
+        if (s.purchaseDocumentNumber === row.purchaseDocumentNumber) {
+          s['_checked'] = true
+        }
+      })
+    },
+    // 单行取消选择
+    tableSelectCancel (selection, row) {
+      this.data1.map(s => {
+        if (s.purchaseDocumentNumber === row.purchaseDocumentNumber) {
+          s['_checked'] = false
+        }
+      })
+    },
+    // 全选
+    tableSelectAll (selection) {
+      this.data1.map(s => {
+        s['_checked'] = true
+      })
+    },
+    // 取消全选
+    tableSelectAllCancel (selection) {
+      this.data1.map(s => {
+        s['_checked'] = false
+      })
+    },
+    // 已询价的全选
+    change_asked () {
+      let checks = true
+      this.data1.forEach(it => {
+        checks = it.notifyTheSupplier && checks
+      })
+      this.checkAll = checks
+    }
+  },
+  props: ['newData'],
+  mounted () {
+    this.loading = true
+    this.alldata = this.newData.newData2
+    this.total = this.alldata.length
+    this.pagenumber = Math.ceil(this.alldata.length / 10)
+    this.alldata.sort(function (a, b) {
+      return a.sqdate > b.sqdate ? 1 : -1
+    })
+    if (this.alldata.length > 10) {
+      this.data1.splice(0, this.data1.length)
+      for (let i = 0; i < 10; i++) {
+        this.data1.push(this.alldata[i])
+      }
+    } else { this.data1 = this.alldata.array }
+    this.loading = false
+    this.change_asked()
   }
 }
 </script>

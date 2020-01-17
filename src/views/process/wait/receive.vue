@@ -4,7 +4,7 @@
       <li><a :class="{'active': isActive}" @click="changeTab">采购订单/合同</a></li>
       <li><a :class="{'active': !isActive}" @click="changeTab">采购订单/合同明细</a></li>
     </ul>
-    <component :is="currentTabComponent"></component>
+    <component :is="currentTabComponent" :newData='newData'></component>
   </div>
 </template>
 
@@ -18,6 +18,7 @@ export default {
       currentTabComponent: Contract
     }
   },
+  props: ['newData'],
   components: {
     Contract, Contractdetail
   },

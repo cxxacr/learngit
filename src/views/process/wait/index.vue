@@ -6,28 +6,28 @@
         <ul class="top2">
           <li class="firs">
             <a :class="{'active' : index === 1}" @click="changeTabs" >
-              <em class="amount">{{newData.length}}</em>
+              <em class="amount">{{newData.newData1.length}}</em>
               <i class="icon xd pos"></i>
               <p>待采购下单</p>
             </a>
           </li>
           <li>
             <a :class="{'active' : index === 2}" @click="changeTabs">
-              <em class="amount">0</em>
+              <em class="amount">{{newData.newData2.length}}</em>
               <i class="icon sh pos"></i>
               <p>待收货</p>
             </a>
           </li>
           <li>
             <a :class="{'active' : index === 3}" @click="changeTabs">
-              <em class="amount">0</em>
+              <em class="amount">{{newData.newData3.length}}</em>
               <i class="icon ys pos"></i>
               <p>到货待验收</p>
             </a>
           </li>
           <li class="last">
             <a :class="{'active' : index === 4}" @click="changeTabs">
-              <em class="amount">0</em>
+              <em class="amount">{{newData.newData4.length}}</em>
               <i class="icon fp pos"></i>
               <p>待开发票</p>
             </a>
@@ -49,7 +49,12 @@ export default {
       flag: false,
       changeTab: [Order, Receive, Check, Receipt],
       index: 1,
-      newData: []
+      newData: {
+        newData1: [],
+        newData2: [],
+        newData3: [],
+        newData4: []
+      }
     }
   },
   methods: {
@@ -79,8 +84,14 @@ export default {
     axios.get('/swipes')
       .then(
         res => {
-          this.newData = res.data[0].array
+          this.newData.newData1 = res.data[0].array
           this.flag = true
+        }
+      )
+    axios.get('/receive')
+      .then(
+        res => {
+          this.newData.newData2 = res.data[0].array
         }
       )
   }

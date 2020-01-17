@@ -14,4 +14,18 @@ const swipes = [{ 'array|20-40': [{
   'passdate': '@date("yyyy-MM-dd")'
 }
 ] }]
+const receive = [{ 'array|20-40': [{
+  'statue|1-2': true,
+  purchaseDocumentNumber: /[a-zA-Z]{3}[0-9]{7}/,
+  documentType: '采购订单',
+  purchaseType: '固定资产',
+  notifyTheSupplier: '@boolean',
+  supplier: '北京旭日中升电子科技有限公司',
+  deliveryAddress: '武汉',
+  documentDate: '@date',
+  documentAmount: /[1-9]{1}[0-9]{3,4}/,
+  company: '南通软通动力网络技术有限公司'
+}
+] }]
 Mock.mock('/swipes', swipes)
+Mock.mock('/receive', receive)

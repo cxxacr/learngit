@@ -37,7 +37,12 @@
     <i class="icon cs i_color"></i><span>超时</span>
     <i class="icon zc i_color"></i><span>正常</span>
   </p>
-  <Table border ref="selection" :loading="loading" :columns="columns1" :data="data1" :disabled-hover='isHover'></Table>
+  <Table border ref="selection" :loading="loading" :columns="columns1" :data="data1"
+    @on-select="tableSelect"
+    @on-select-cancel="tableSelectCancel"
+    @on-select-all="tableSelectAll"
+    @on-select-all-cancel="tableSelectAllCancel"
+    :disabled-hover='isHover'></Table>
   <p class="finally"><span>总共{{total}}条记录，共{{pagenumber}}页</span>
   <Page ref="pages" :total="total" show-elevator @on-change='page_change'/>
   </p>
@@ -193,9 +198,39 @@ export default {
   },
   props: ['newData'],
   methods: {
+    // 单行选择
+    tableSelect (selection, row) {
+      this.data1.map(s => {
+        if (s.sqnumber === row.sqnumber) {
+          s['_checked'] = true
+        }
+      })
+    },
+    // 单行取消选择
+    tableSelectCancel (selection, row) {
+      this.data1.map(s => {
+        if (s.sqnumber === row.sqnumber) {
+          s['_checked'] = false
+        }
+      })
+    },
+    // 全选
+    tableSelectAll (selection) {
+      this.data1.map(s => {
+        s['_checked'] = true
+      })
+    },
+    // 取消全选
+    tableSelectAllCancel (selection) {
+      this.data1.map(s => {
+        s['_checked'] = false
+      })
+    },
+    // 获取最初日期
     getDate1 (e) {
       this.value1 = e
     },
+    // 获取之后日期
     getDate2 (e) {
       this.value2 = e
     },
@@ -257,7 +292,7 @@ export default {
   },
   mounted () {
     this.loading = true
-    this.alldata = this.newData
+    this.alldata = this.newData.newData1
     this.total = this.alldata.length
     this.pagenumber = Math.ceil(this.alldata.length / 10)
     this.alldata.sort(function (a, b) {

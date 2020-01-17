@@ -17,7 +17,7 @@
         <i class="icons search"></i></span>
       </li>
       <li class="li"><small>采购类型 : </small>
-        <Select v-model="model1" style="width:180px">
+        <Select v-model="type1" style="width:180px">
         <Option v-for="item in typeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
         </Select>
       </li>
@@ -83,31 +83,19 @@ export default {
       input_value: ' ',
       typeList: [
         {
-          value: 'New York',
-          label: 'New York'
+          value: '',
+          label: '请选择'
         },
         {
-          value: 'London',
-          label: 'London'
+          value: '固定资产',
+          label: '固定资产'
         },
         {
-          value: 'Sydney',
-          label: 'Sydney'
-        },
-        {
-          value: 'Ottawa',
-          label: 'Ottawa'
-        },
-        {
-          value: 'Paris',
-          label: 'Paris'
-        },
-        {
-          value: 'Canberra',
-          label: 'Canberra'
+          value: '低值易耗',
+          label: '低值易耗'
         }
       ],
-      model1: '',
+      type1: '',
       peopleList: [
         {
           value: 'New York',
@@ -285,6 +273,14 @@ export default {
         s['_checked'] = false
       })
     },
+    // 已询价的全选
+    change_asked () {
+      let checks = true
+      this.data1.forEach(it => {
+        checks = it.asked && checks
+      })
+      this.checkAll = checks
+    },
     page_change (num) {
       this.data1.splice(0, this.data1.length)
       // 优先启用满足当前条件的数据
@@ -293,6 +289,7 @@ export default {
        (num * 10 > pagedata.length ? pagedata.length : num * 10); i++) {
         this.data1.push(pagedata[i])
       }
+      this.change_asked()
     }
   },
   props: [
@@ -300,7 +297,7 @@ export default {
   ],
   mounted () {
     this.loading = true
-    this.alldata = this.newData
+    this.alldata = this.newData.newData1
     this.total = this.alldata.length
     this.pagenumber = Math.ceil(this.alldata.length / 10)
     this.alldata.sort(function (a, b) {
@@ -314,11 +311,7 @@ export default {
     } else { this.data1 = this.alldata.array }
     this.loading = false
     // 已询价的全选
-    let checks = true
-    this.data1.forEach(it => {
-      checks = it.asked && checks
-    })
-    this.checkAll = checks
+    this.change_asked()
   }
 }
 </script>
